@@ -10,6 +10,7 @@ pragma solidity >=0.8.2 <0.9.0;
 contract Storage {
 
     uint256 number;
+    // Just made it
 
     /**
      * @dev Store value in variable
