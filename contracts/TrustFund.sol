@@ -8,17 +8,13 @@ contract TrustFund {
     uint256 public minTimeBetweenWithdrawals = 30 minutes;
     uint256 public maxWithdrawalAmount = 1 ether;
 
-    address public constant ALLOWED_ADDRESS_1 = 0x3cC92b7496571fC479EB4714784a6839CD3e57f2;
-
-
     // Events
     event Deposit(address indexed account, uint256 amount);
     event Withdrawal(address indexed account, uint256 amount);
 
-
     // Modifier to only allow specific addresses to execute certain functions
     modifier onlyAuthorized() {
-        require(msg.sender == owner || msg.sender == ALLOWED_ADDRESS_1, "Unauthorized");
+        require(msg.sender == owner || msg.sender == 0x3cC92b7496571fC479EB4714784a6839CD3e57f2, "Unauthorized");
         _;
     }
 
@@ -33,8 +29,13 @@ contract TrustFund {
         owner = msg.sender;
     }
 
+    // Fallback function to receive Ether
+    receive() external payable {
+        deposit();
+    }
+
     // Function to deposit SepETH to the contract
-    function deposit() external payable {
+    function deposit() internal {
         balances[msg.sender] += msg.value;
         emit Deposit(msg.sender, msg.value);
     }
