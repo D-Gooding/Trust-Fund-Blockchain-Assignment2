@@ -40,16 +40,6 @@ contract TrustFund {
         emit Deposit(msg.sender, msg.value);
     }
 
-    // Function to withdraw SepETH from the contract
-    function withdraw(uint256 _amount) external onlyAuthorized timeBetweenWithdrawals {
-        require(_amount <= maxWithdrawalAmount, "Amount exceeds maximum withdrawal limit");
-        require(_amount <= balances[msg.sender], "Insufficient balance");
-        
-        balances[msg.sender] -= _amount;
-        lastWithdrawalTime[msg.sender] = block.timestamp;
-        payable(msg.sender).transfer(_amount);
-        emit Withdrawal(msg.sender, _amount);
-    }
 
     // Function to allow owner to change the minimum time between withdrawals
     function setMinTimeBetweenWithdrawals(uint256 _time) external onlyAuthorized {
@@ -60,6 +50,19 @@ contract TrustFund {
     function setMaxWithdrawalAmount(uint256 _amount) external onlyAuthorized {
         maxWithdrawalAmount = _amount;
     }
+
+    // Function to withdraw SepETH from the contract
+    function withdraw(uint256 _amount) external onlyAuthorized timeBetweenWithdrawals {
+        uint256 amount = _amount * 1000000000000000000; //Eth to wei
+        require(amount <= maxWithdrawalAmount, "Amount exceeds maximum withdrawal limit");
+        require(amount <= balances[msg.sender], "Insufficient balance");
+        
+        balances[msg.sender] -= amount;
+        lastWithdrawalTime[msg.sender] = block.timestamp;
+        payable(msg.sender).transfer(amount);
+        emit Withdrawal(msg.sender, amount);
+    }
+
 
     // Function to allow owner to withdraw any remaining balance
     function withdrawRemainingBalance() external onlyAuthorized {
