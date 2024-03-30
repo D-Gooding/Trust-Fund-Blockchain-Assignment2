@@ -40,19 +40,9 @@ contract TrustFund {
         emit Deposit(msg.sender, msg.value);
     }
 
-    // Function to allow owner to change the minimum time between withdrawals
-    function setMinTimeBetweenWithdrawals(uint256 _time) external onlyAuthorized {
-        minTimeBetweenWithdrawals = _time;
-    }
-
-    // Function to allow owner to change the maximum withdrawal amount
-    function setMaxWithdrawalAmount(uint256 _amount) external onlyAuthorized {
-        maxWithdrawalAmount = _amount;
-    }
-
     // Function to withdraw Ether from the contract
     function withdraw(uint256 _amount) external onlyAuthorized timeBetweenWithdrawals {
-        uint256 amount = _amount * 1000000000000000000;
+        uint256 amount = _amount * 1000000000000000000; //wei to ETH
         require(amount <= maxWithdrawalAmount, "Amount exceeds maximum withdrawal limit");
         require(amount <= balances[msg.sender], "Insufficient balance");
 
@@ -67,20 +57,6 @@ contract TrustFund {
         emit Withdrawal(msg.sender, amount);
     }
 
-    // Function to allow owner to withdraw any remaining balance
-    function withdrawRemainingBalance() external onlyAuthorized {
-        uint256 amount = balances[msg.sender];
-        require(amount > 0, "No balance to withdraw");
-
-        // Effects
-        balances[msg.sender] = 0;
-
-        // Interactions
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
-        require(success, "Transfer failed");
-
-        emit Withdrawal(msg.sender, amount);
-    }
 
     // Function to allow owner to transfer ownership
     function transferOwnership(address _newOwner) external onlyAuthorized {
