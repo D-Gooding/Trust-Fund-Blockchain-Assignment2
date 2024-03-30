@@ -34,12 +34,11 @@ contract TrustFund {
         deposit();
     }
 
-    // Function to deposit SepETH to the contract
+    // Function to deposit Ether to the contract
     function deposit() internal {
         balances[msg.sender] += msg.value;
         emit Deposit(msg.sender, msg.value);
     }
-
 
     // Function to allow owner to change the minimum time between withdrawals
     function setMinTimeBetweenWithdrawals(uint256 _time) external onlyAuthorized {
@@ -51,25 +50,35 @@ contract TrustFund {
         maxWithdrawalAmount = _amount;
     }
 
-    // Function to withdraw SepETH from the contract
+    // Function to withdraw Ether from the contract
     function withdraw(uint256 _amount) external onlyAuthorized timeBetweenWithdrawals {
-        uint256 amount = _amount * 1000000000000000000; //Eth to wei
+        uint256 amount = _amount * 1000000000000000000;
         require(amount <= maxWithdrawalAmount, "Amount exceeds maximum withdrawal limit");
         require(amount <= balances[msg.sender], "Insufficient balance");
-        
+
+
         balances[msg.sender] -= amount;
         lastWithdrawalTime[msg.sender] = block.timestamp;
-        payable(msg.sender).transfer(amount);
+
+        // Interactions
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
+
         emit Withdrawal(msg.sender, amount);
     }
-
 
     // Function to allow owner to withdraw any remaining balance
     function withdrawRemainingBalance() external onlyAuthorized {
         uint256 amount = balances[msg.sender];
         require(amount > 0, "No balance to withdraw");
+
+        // Effects
         balances[msg.sender] = 0;
-        payable(msg.sender).transfer(amount);
+
+        // Interactions
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
+
         emit Withdrawal(msg.sender, amount);
     }
 
